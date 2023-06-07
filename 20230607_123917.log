@@ -1,0 +1,838 @@
+2023/06/07 12:39:17 - mmengine - INFO - 
+------------------------------------------------------------
+System environment:
+    sys.platform: linux
+    Python: 3.8.16 | packaged by conda-forge | (default, Feb  1 2023, 16:01:55) [GCC 11.3.0]
+    CUDA available: True
+    numpy_random_seed: 742000695
+    GPU 0: NVIDIA GeForce GTX 1080 Ti
+    CUDA_HOME: /usr/local/cuda
+    NVCC: Cuda compilation tools, release 11.3, V11.3.58
+    GCC: gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0
+    PyTorch: 1.10.0
+    PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2023.1-Product Build 20230303 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.2.3 (Git Hash 7336ca9f055cf1bfa13efb658fe15dc9b41f0740)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.3
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.2
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.3, CUDNN_VERSION=8.2.0, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.10.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+    TorchVision: 0.11.0
+    OpenCV: 4.7.0
+    MMEngine: 0.7.3
+
+Runtime environment:
+    cudnn_benchmark: False
+    mp_cfg: {'mp_start_method': 'fork', 'opencv_num_threads': 0}
+    dist_cfg: {'backend': 'nccl'}
+    seed: None
+    deterministic: False
+    Distributed launcher: none
+    Distributed training: False
+    GPU number: 1
+------------------------------------------------------------
+
+2023/06/07 12:39:18 - mmengine - INFO - Config:
+model = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='ResNet',
+        depth=18,
+        num_stages=4,
+        out_indices=(3, ),
+        style='pytorch'),
+    neck=dict(type='GlobalAveragePooling'),
+    head=dict(
+        type='LinearClsHead',
+        num_classes=30,
+        in_channels=512,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        topk=(1, 5)),
+    init_cfg=dict(
+        type='Pretrained',
+        checkpoint=
+        'https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth'
+    ))
+dataset_type = 'CustomDataset'
+data_preprocessor = dict(
+    num_classes=30,
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='RandomResizedCrop', scale=224),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackInputs')
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='ResizeEdge', scale=256, edge='short'),
+    dict(type='CenterCrop', crop_size=224),
+    dict(type='PackInputs')
+]
+train_dataloader = dict(
+    pin_memory=True,
+    persistent_workers=True,
+    collate_fn=dict(type='default_collate'),
+    batch_size=32,
+    num_workers=5,
+    dataset=dict(
+        type='CustomDataset',
+        data_root='data/fruit30/train_set/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='RandomResizedCrop', scale=224),
+            dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+            dict(type='PackInputs')
+        ]),
+    sampler=dict(type='DefaultSampler', shuffle=True))
+val_dataloader = dict(
+    pin_memory=True,
+    persistent_workers=True,
+    collate_fn=dict(type='default_collate'),
+    batch_size=32,
+    num_workers=5,
+    dataset=dict(
+        type='CustomDataset',
+        data_root='data/fruit30/test_set/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='ResizeEdge', scale=256, edge='short'),
+            dict(type='CenterCrop', crop_size=224),
+            dict(type='PackInputs')
+        ]),
+    sampler=dict(type='DefaultSampler', shuffle=False))
+val_evaluator = dict(type='Accuracy', topk=1)
+test_dataloader = dict(
+    pin_memory=True,
+    persistent_workers=True,
+    collate_fn=dict(type='default_collate'),
+    batch_size=32,
+    num_workers=5,
+    dataset=dict(
+        type='CustomDataset',
+        data_root='data/fruit30/test_set/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='ResizeEdge', scale=256, edge='short'),
+            dict(type='CenterCrop', crop_size=224),
+            dict(type='PackInputs')
+        ]),
+    sampler=dict(type='DefaultSampler', shuffle=False))
+test_evaluator = dict(type='Accuracy', topk=1)
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001))
+param_scheduler = dict(
+    type='MultiStepLR', by_epoch=True, milestones=[30, 60, 90], gamma=0.1)
+train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
+val_cfg = dict()
+test_cfg = dict()
+default_scope = 'mmpretrain'
+default_hooks = dict(
+    timer=dict(type='IterTimerHook'),
+    logger=dict(type='LoggerHook', interval=100),
+    param_scheduler=dict(type='ParamSchedulerHook'),
+    checkpoint=dict(type='CheckpointHook', interval=1),
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+    visualization=dict(type='VisualizationHook', enable=False))
+env_cfg = dict(
+    cudnn_benchmark=False,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'))
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='UniversalVisualizer', vis_backends=[dict(type='LocalVisBackend')])
+log_level = 'INFO'
+load_from = None
+resume = False
+randomness = dict(seed=None, deterministic=False)
+launcher = 'none'
+work_dir = 'work_dirs/fruit30/resnet18_finetune'
+
+2023/06/07 12:39:23 - mmengine - INFO - Distributed training is not used, all SyncBatchNorm (SyncBN) layers in the model will be automatically reverted to BatchNormXd layers if they are used.
+2023/06/07 12:39:23 - mmengine - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+before_train:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) DistSamplerSeedHook                
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) IterTimerHook                      
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_val_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) VisualizationHook                  
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_val_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+after_train:
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_test_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_test_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_test_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) VisualizationHook                  
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_test_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_run:
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+2023/06/07 12:39:25 - mmengine - INFO - load model from: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+2023/06/07 12:39:25 - mmengine - INFO - Loads checkpoint by http backend from path: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+2023/06/07 12:39:25 - mmengine - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for head.fc.weight: copying a param with shape torch.Size([1000, 512]) from checkpoint, the shape in current model is torch.Size([30, 512]).
+size mismatch for head.fc.bias: copying a param with shape torch.Size([1000]) from checkpoint, the shape in current model is torch.Size([30]).
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 64, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.downsample.0.weight - torch.Size([128, 64, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.0.downsample.1.bias - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.downsample.0.weight - torch.Size([256, 128, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth 
+
+head.fc.weight - torch.Size([30, 512]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+head.fc.bias - torch.Size([30]): 
+NormalInit: mean=0, std=0.01, bias=0 
+2023/06/07 12:39:25 - mmengine - WARNING - "FileClient" will be deprecated in future. Please use io functions in https://mmengine.readthedocs.io/en/latest/api/fileio.html#file-io
+2023/06/07 12:39:25 - mmengine - WARNING - "HardDiskBackend" is the alias of "LocalBackend" and the former will be deprecated in future.
+2023/06/07 12:39:25 - mmengine - INFO - Checkpoints will be saved to /workspace/mmpretrain/work_dirs/fruit30/resnet18_finetune.
+2023/06/07 12:39:31 - mmengine - INFO - Epoch(train)   [1][100/108]  lr: 1.0000e-02  eta: 0:11:15  time: 0.0539  data_time: 0.0004  memory: 921  loss: 1.1532
+2023/06/07 12:39:31 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:39:31 - mmengine - INFO - Saving checkpoint at 1 epochs
+2023/06/07 12:39:34 - mmengine - INFO - Epoch(val) [1][30/30]    accuracy/top1: 65.3476  data_time: 0.0226  time: 0.0402
+2023/06/07 12:39:39 - mmengine - INFO - Epoch(train)   [2][100/108]  lr: 1.0000e-02  eta: 0:10:27  time: 0.0539  data_time: 0.0005  memory: 921  loss: 0.9847
+2023/06/07 12:39:40 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:39:40 - mmengine - INFO - Saving checkpoint at 2 epochs
+2023/06/07 12:39:42 - mmengine - INFO - Epoch(val) [2][30/30]    accuracy/top1: 65.9893  data_time: 0.0173  time: 0.0343
+2023/06/07 12:39:47 - mmengine - INFO - Epoch(train)   [3][100/108]  lr: 1.0000e-02  eta: 0:10:07  time: 0.0541  data_time: 0.0005  memory: 921  loss: 0.9290
+2023/06/07 12:39:48 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:39:48 - mmengine - INFO - Saving checkpoint at 3 epochs
+2023/06/07 12:39:50 - mmengine - INFO - Epoch(val) [3][30/30]    accuracy/top1: 78.8235  data_time: 0.0170  time: 0.0342
+2023/06/07 12:39:56 - mmengine - INFO - Epoch(train)   [4][100/108]  lr: 1.0000e-02  eta: 0:09:54  time: 0.0545  data_time: 0.0005  memory: 921  loss: 0.7825
+2023/06/07 12:39:56 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:39:56 - mmengine - INFO - Saving checkpoint at 4 epochs
+2023/06/07 12:39:58 - mmengine - INFO - Epoch(val) [4][30/30]    accuracy/top1: 73.6898  data_time: 0.0168  time: 0.0341
+2023/06/07 12:40:04 - mmengine - INFO - Epoch(train)   [5][100/108]  lr: 1.0000e-02  eta: 0:09:45  time: 0.0542  data_time: 0.0005  memory: 921  loss: 0.6694
+2023/06/07 12:40:04 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:04 - mmengine - INFO - Saving checkpoint at 5 epochs
+2023/06/07 12:40:06 - mmengine - INFO - Epoch(val) [5][30/30]    accuracy/top1: 76.6845  data_time: 0.0163  time: 0.0334
+2023/06/07 12:40:12 - mmengine - INFO - Epoch(train)   [6][100/108]  lr: 1.0000e-02  eta: 0:09:36  time: 0.0543  data_time: 0.0005  memory: 921  loss: 0.6537
+2023/06/07 12:40:12 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:12 - mmengine - INFO - Saving checkpoint at 6 epochs
+2023/06/07 12:40:14 - mmengine - INFO - Epoch(val) [6][30/30]    accuracy/top1: 79.5722  data_time: 0.0148  time: 0.0349
+2023/06/07 12:40:20 - mmengine - INFO - Epoch(train)   [7][100/108]  lr: 1.0000e-02  eta: 0:09:29  time: 0.0544  data_time: 0.0005  memory: 921  loss: 0.4487
+2023/06/07 12:40:20 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:20 - mmengine - INFO - Saving checkpoint at 7 epochs
+2023/06/07 12:40:22 - mmengine - INFO - Epoch(val) [7][30/30]    accuracy/top1: 79.8930  data_time: 0.0146  time: 0.0318
+2023/06/07 12:40:28 - mmengine - INFO - Epoch(train)   [8][100/108]  lr: 1.0000e-02  eta: 0:09:22  time: 0.0552  data_time: 0.0005  memory: 921  loss: 0.5254
+2023/06/07 12:40:28 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:28 - mmengine - INFO - Saving checkpoint at 8 epochs
+2023/06/07 12:40:30 - mmengine - INFO - Epoch(val) [8][30/30]    accuracy/top1: 78.9305  data_time: 0.0151  time: 0.0325
+2023/06/07 12:40:36 - mmengine - INFO - Epoch(train)   [9][100/108]  lr: 1.0000e-02  eta: 0:09:15  time: 0.0557  data_time: 0.0005  memory: 921  loss: 0.5381
+2023/06/07 12:40:36 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:36 - mmengine - INFO - Saving checkpoint at 9 epochs
+2023/06/07 12:40:39 - mmengine - INFO - Epoch(val) [9][30/30]    accuracy/top1: 82.1390  data_time: 0.0162  time: 0.0335
+2023/06/07 12:40:40 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:44 - mmengine - INFO - Epoch(train)  [10][100/108]  lr: 1.0000e-02  eta: 0:09:09  time: 0.0563  data_time: 0.0005  memory: 921  loss: 0.4592
+2023/06/07 12:40:45 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:45 - mmengine - INFO - Saving checkpoint at 10 epochs
+2023/06/07 12:40:47 - mmengine - INFO - Epoch(val) [10][30/30]    accuracy/top1: 82.5668  data_time: 0.0167  time: 0.0346
+2023/06/07 12:40:53 - mmengine - INFO - Epoch(train)  [11][100/108]  lr: 1.0000e-02  eta: 0:09:04  time: 0.0569  data_time: 0.0005  memory: 921  loss: 0.4360
+2023/06/07 12:40:53 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:40:53 - mmengine - INFO - Saving checkpoint at 11 epochs
+2023/06/07 12:40:55 - mmengine - INFO - Epoch(val) [11][30/30]    accuracy/top1: 81.9251  data_time: 0.0167  time: 0.0338
+2023/06/07 12:41:01 - mmengine - INFO - Epoch(train)  [12][100/108]  lr: 1.0000e-02  eta: 0:08:58  time: 0.0562  data_time: 0.0005  memory: 921  loss: 0.4185
+2023/06/07 12:41:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:41:01 - mmengine - INFO - Saving checkpoint at 12 epochs
+2023/06/07 12:41:03 - mmengine - INFO - Epoch(val) [12][30/30]    accuracy/top1: 80.1069  data_time: 0.0151  time: 0.0331
+2023/06/07 12:41:09 - mmengine - INFO - Epoch(train)  [13][100/108]  lr: 1.0000e-02  eta: 0:08:52  time: 0.0576  data_time: 0.0005  memory: 921  loss: 0.4387
+2023/06/07 12:41:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:41:09 - mmengine - INFO - Saving checkpoint at 13 epochs
+2023/06/07 12:41:11 - mmengine - INFO - Epoch(val) [13][30/30]    accuracy/top1: 82.6738  data_time: 0.0147  time: 0.0324
+2023/06/07 12:41:18 - mmengine - INFO - Epoch(train)  [14][100/108]  lr: 1.0000e-02  eta: 0:08:49  time: 0.0594  data_time: 0.0005  memory: 921  loss: 0.3514
+2023/06/07 12:41:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:41:18 - mmengine - INFO - Saving checkpoint at 14 epochs
+2023/06/07 12:41:20 - mmengine - INFO - Epoch(val) [14][30/30]    accuracy/top1: 85.8824  data_time: 0.0149  time: 0.0328
+2023/06/07 12:41:26 - mmengine - INFO - Epoch(train)  [15][100/108]  lr: 1.0000e-02  eta: 0:08:44  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.3859
+2023/06/07 12:41:27 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:41:27 - mmengine - INFO - Saving checkpoint at 15 epochs
+2023/06/07 12:41:29 - mmengine - INFO - Epoch(val) [15][30/30]    accuracy/top1: 83.4225  data_time: 0.0150  time: 0.0325
+2023/06/07 12:41:35 - mmengine - INFO - Epoch(train)  [16][100/108]  lr: 1.0000e-02  eta: 0:08:40  time: 0.0594  data_time: 0.0004  memory: 921  loss: 0.2708
+2023/06/07 12:41:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:41:35 - mmengine - INFO - Saving checkpoint at 16 epochs
+2023/06/07 12:41:37 - mmengine - INFO - Epoch(val) [16][30/30]    accuracy/top1: 85.0267  data_time: 0.0182  time: 0.0357
+2023/06/07 12:41:43 - mmengine - INFO - Epoch(train)  [17][100/108]  lr: 1.0000e-02  eta: 0:08:35  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.3909
+2023/06/07 12:41:44 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:41:44 - mmengine - INFO - Saving checkpoint at 17 epochs
+2023/06/07 12:41:46 - mmengine - INFO - Epoch(val) [17][30/30]    accuracy/top1: 83.4225  data_time: 0.0142  time: 0.0321
+2023/06/07 12:41:52 - mmengine - INFO - Epoch(train)  [18][100/108]  lr: 1.0000e-02  eta: 0:08:30  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.3518
+2023/06/07 12:41:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:41:52 - mmengine - INFO - Saving checkpoint at 18 epochs
+2023/06/07 12:41:54 - mmengine - INFO - Epoch(val) [18][30/30]    accuracy/top1: 85.4545  data_time: 0.0151  time: 0.0327
+2023/06/07 12:41:57 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:00 - mmengine - INFO - Epoch(train)  [19][100/108]  lr: 1.0000e-02  eta: 0:08:24  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.4362
+2023/06/07 12:42:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:01 - mmengine - INFO - Saving checkpoint at 19 epochs
+2023/06/07 12:42:03 - mmengine - INFO - Epoch(val) [19][30/30]    accuracy/top1: 85.1337  data_time: 0.0141  time: 0.0327
+2023/06/07 12:42:09 - mmengine - INFO - Epoch(train)  [20][100/108]  lr: 1.0000e-02  eta: 0:08:19  time: 0.0594  data_time: 0.0005  memory: 921  loss: 0.4366
+2023/06/07 12:42:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:09 - mmengine - INFO - Saving checkpoint at 20 epochs
+2023/06/07 12:42:11 - mmengine - INFO - Epoch(val) [20][30/30]    accuracy/top1: 83.3155  data_time: 0.0143  time: 0.0328
+2023/06/07 12:42:17 - mmengine - INFO - Epoch(train)  [21][100/108]  lr: 1.0000e-02  eta: 0:08:14  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.3730
+2023/06/07 12:42:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:18 - mmengine - INFO - Saving checkpoint at 21 epochs
+2023/06/07 12:42:20 - mmengine - INFO - Epoch(val) [21][30/30]    accuracy/top1: 81.2834  data_time: 0.0143  time: 0.0322
+2023/06/07 12:42:26 - mmengine - INFO - Epoch(train)  [22][100/108]  lr: 1.0000e-02  eta: 0:08:08  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.3776
+2023/06/07 12:42:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:26 - mmengine - INFO - Saving checkpoint at 22 epochs
+2023/06/07 12:42:28 - mmengine - INFO - Epoch(val) [22][30/30]    accuracy/top1: 84.3850  data_time: 0.0174  time: 0.0360
+2023/06/07 12:42:34 - mmengine - INFO - Epoch(train)  [23][100/108]  lr: 1.0000e-02  eta: 0:08:03  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.3679
+2023/06/07 12:42:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:35 - mmengine - INFO - Saving checkpoint at 23 epochs
+2023/06/07 12:42:37 - mmengine - INFO - Epoch(val) [23][30/30]    accuracy/top1: 83.1016  data_time: 0.0143  time: 0.0327
+2023/06/07 12:42:43 - mmengine - INFO - Epoch(train)  [24][100/108]  lr: 1.0000e-02  eta: 0:07:57  time: 0.0597  data_time: 0.0007  memory: 921  loss: 0.2426
+2023/06/07 12:42:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:43 - mmengine - INFO - Saving checkpoint at 24 epochs
+2023/06/07 12:42:45 - mmengine - INFO - Epoch(val) [24][30/30]    accuracy/top1: 85.9893  data_time: 0.0139  time: 0.0324
+2023/06/07 12:42:52 - mmengine - INFO - Epoch(train)  [25][100/108]  lr: 1.0000e-02  eta: 0:07:52  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.2284
+2023/06/07 12:42:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:42:52 - mmengine - INFO - Saving checkpoint at 25 epochs
+2023/06/07 12:42:54 - mmengine - INFO - Epoch(val) [25][30/30]    accuracy/top1: 87.0588  data_time: 0.0101  time: 0.0319
+2023/06/07 12:43:00 - mmengine - INFO - Epoch(train)  [26][100/108]  lr: 1.0000e-02  eta: 0:07:46  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.2282
+2023/06/07 12:43:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:01 - mmengine - INFO - Saving checkpoint at 26 epochs
+2023/06/07 12:43:03 - mmengine - INFO - Epoch(val) [26][30/30]    accuracy/top1: 87.5936  data_time: 0.0130  time: 0.0315
+2023/06/07 12:43:09 - mmengine - INFO - Epoch(train)  [27][100/108]  lr: 1.0000e-02  eta: 0:07:41  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.3166
+2023/06/07 12:43:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:09 - mmengine - INFO - Saving checkpoint at 27 epochs
+2023/06/07 12:43:11 - mmengine - INFO - Epoch(val) [27][30/30]    accuracy/top1: 84.9198  data_time: 0.0139  time: 0.0320
+2023/06/07 12:43:16 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:17 - mmengine - INFO - Epoch(train)  [28][100/108]  lr: 1.0000e-02  eta: 0:07:35  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.3864
+2023/06/07 12:43:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:18 - mmengine - INFO - Saving checkpoint at 28 epochs
+2023/06/07 12:43:20 - mmengine - INFO - Epoch(val) [28][30/30]    accuracy/top1: 84.2781  data_time: 0.0159  time: 0.0341
+2023/06/07 12:43:26 - mmengine - INFO - Epoch(train)  [29][100/108]  lr: 1.0000e-02  eta: 0:07:29  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.2491
+2023/06/07 12:43:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:26 - mmengine - INFO - Saving checkpoint at 29 epochs
+2023/06/07 12:43:29 - mmengine - INFO - Epoch(val) [29][30/30]    accuracy/top1: 83.9572  data_time: 0.0171  time: 0.0344
+2023/06/07 12:43:35 - mmengine - INFO - Epoch(train)  [30][100/108]  lr: 1.0000e-02  eta: 0:07:23  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.2056
+2023/06/07 12:43:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:35 - mmengine - INFO - Saving checkpoint at 30 epochs
+2023/06/07 12:43:37 - mmengine - INFO - Epoch(val) [30][30/30]    accuracy/top1: 87.9144  data_time: 0.0140  time: 0.0319
+2023/06/07 12:43:43 - mmengine - INFO - Epoch(train)  [31][100/108]  lr: 1.0000e-03  eta: 0:07:17  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.1580
+2023/06/07 12:43:44 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:44 - mmengine - INFO - Saving checkpoint at 31 epochs
+2023/06/07 12:43:46 - mmengine - INFO - Epoch(val) [31][30/30]    accuracy/top1: 90.0535  data_time: 0.0132  time: 0.0316
+2023/06/07 12:43:52 - mmengine - INFO - Epoch(train)  [32][100/108]  lr: 1.0000e-03  eta: 0:07:11  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.2021
+2023/06/07 12:43:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:43:52 - mmengine - INFO - Saving checkpoint at 32 epochs
+2023/06/07 12:43:54 - mmengine - INFO - Epoch(val) [32][30/30]    accuracy/top1: 91.1230  data_time: 0.0140  time: 0.0318
+2023/06/07 12:44:00 - mmengine - INFO - Epoch(train)  [33][100/108]  lr: 1.0000e-03  eta: 0:07:06  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0969
+2023/06/07 12:44:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:01 - mmengine - INFO - Saving checkpoint at 33 epochs
+2023/06/07 12:44:03 - mmengine - INFO - Epoch(val) [33][30/30]    accuracy/top1: 91.1230  data_time: 0.0132  time: 0.0317
+2023/06/07 12:44:09 - mmengine - INFO - Epoch(train)  [34][100/108]  lr: 1.0000e-03  eta: 0:07:00  time: 0.0595  data_time: 0.0006  memory: 921  loss: 0.1305
+2023/06/07 12:44:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:09 - mmengine - INFO - Saving checkpoint at 34 epochs
+2023/06/07 12:44:11 - mmengine - INFO - Epoch(val) [34][30/30]    accuracy/top1: 91.2299  data_time: 0.0130  time: 0.0311
+2023/06/07 12:44:17 - mmengine - INFO - Epoch(train)  [35][100/108]  lr: 1.0000e-03  eta: 0:06:54  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.0845
+2023/06/07 12:44:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:18 - mmengine - INFO - Saving checkpoint at 35 epochs
+2023/06/07 12:44:20 - mmengine - INFO - Epoch(val) [35][30/30]    accuracy/top1: 90.8021  data_time: 0.0115  time: 0.0329
+2023/06/07 12:44:26 - mmengine - INFO - Epoch(train)  [36][100/108]  lr: 1.0000e-03  eta: 0:06:48  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.1157
+2023/06/07 12:44:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:26 - mmengine - INFO - Saving checkpoint at 36 epochs
+2023/06/07 12:44:28 - mmengine - INFO - Epoch(val) [36][30/30]    accuracy/top1: 91.0160  data_time: 0.0143  time: 0.0327
+2023/06/07 12:44:35 - mmengine - INFO - Epoch(train)  [37][100/108]  lr: 1.0000e-03  eta: 0:06:42  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.1011
+2023/06/07 12:44:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:35 - mmengine - INFO - Saving checkpoint at 37 epochs
+2023/06/07 12:44:37 - mmengine - INFO - Epoch(val) [37][30/30]    accuracy/top1: 91.5508  data_time: 0.0140  time: 0.0320
+2023/06/07 12:44:37 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:43 - mmengine - INFO - Epoch(train)  [38][100/108]  lr: 1.0000e-03  eta: 0:06:35  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0700
+2023/06/07 12:44:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:43 - mmengine - INFO - Saving checkpoint at 38 epochs
+2023/06/07 12:44:45 - mmengine - INFO - Epoch(val) [38][30/30]    accuracy/top1: 91.5508  data_time: 0.0144  time: 0.0323
+2023/06/07 12:44:52 - mmengine - INFO - Epoch(train)  [39][100/108]  lr: 1.0000e-03  eta: 0:06:29  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0929
+2023/06/07 12:44:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:44:52 - mmengine - INFO - Saving checkpoint at 39 epochs
+2023/06/07 12:44:54 - mmengine - INFO - Epoch(val) [39][30/30]    accuracy/top1: 91.3369  data_time: 0.0141  time: 0.0318
+2023/06/07 12:45:00 - mmengine - INFO - Epoch(train)  [40][100/108]  lr: 1.0000e-03  eta: 0:06:23  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0765
+2023/06/07 12:45:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:45:01 - mmengine - INFO - Saving checkpoint at 40 epochs
+2023/06/07 12:45:03 - mmengine - INFO - Epoch(val) [40][30/30]    accuracy/top1: 90.9091  data_time: 0.0130  time: 0.0311
+2023/06/07 12:45:09 - mmengine - INFO - Epoch(train)  [41][100/108]  lr: 1.0000e-03  eta: 0:06:17  time: 0.0598  data_time: 0.0006  memory: 921  loss: 0.0772
+2023/06/07 12:45:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:45:09 - mmengine - INFO - Saving checkpoint at 41 epochs
+2023/06/07 12:45:11 - mmengine - INFO - Epoch(val) [41][30/30]    accuracy/top1: 90.5882  data_time: 0.0127  time: 0.0307
+2023/06/07 12:45:17 - mmengine - INFO - Epoch(train)  [42][100/108]  lr: 1.0000e-03  eta: 0:06:11  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0723
+2023/06/07 12:45:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:45:18 - mmengine - INFO - Saving checkpoint at 42 epochs
+2023/06/07 12:45:20 - mmengine - INFO - Epoch(val) [42][30/30]    accuracy/top1: 90.6952  data_time: 0.0145  time: 0.0326
+2023/06/07 12:45:26 - mmengine - INFO - Epoch(train)  [43][100/108]  lr: 1.0000e-03  eta: 0:06:04  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0675
+2023/06/07 12:45:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:45:26 - mmengine - INFO - Saving checkpoint at 43 epochs
+2023/06/07 12:45:28 - mmengine - INFO - Epoch(val) [43][30/30]    accuracy/top1: 90.8021  data_time: 0.0148  time: 0.0324
+2023/06/07 12:45:34 - mmengine - INFO - Epoch(train)  [44][100/108]  lr: 1.0000e-03  eta: 0:05:58  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0707
+2023/06/07 12:45:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:45:35 - mmengine - INFO - Saving checkpoint at 44 epochs
+2023/06/07 12:45:37 - mmengine - INFO - Epoch(val) [44][30/30]    accuracy/top1: 90.8021  data_time: 0.0147  time: 0.0324
+2023/06/07 12:45:43 - mmengine - INFO - Epoch(train)  [45][100/108]  lr: 1.0000e-03  eta: 0:05:52  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0870
+2023/06/07 12:45:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:45:43 - mmengine - INFO - Saving checkpoint at 45 epochs
+2023/06/07 12:45:45 - mmengine - INFO - Epoch(val) [45][30/30]    accuracy/top1: 91.1230  data_time: 0.0132  time: 0.0315
+2023/06/07 12:45:51 - mmengine - INFO - Epoch(train)  [46][100/108]  lr: 1.0000e-03  eta: 0:05:46  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0838
+2023/06/07 12:45:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:45:52 - mmengine - INFO - Saving checkpoint at 46 epochs
+2023/06/07 12:45:54 - mmengine - INFO - Epoch(val) [46][30/30]    accuracy/top1: 91.0160  data_time: 0.0132  time: 0.0310
+2023/06/07 12:45:56 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:00 - mmengine - INFO - Epoch(train)  [47][100/108]  lr: 1.0000e-03  eta: 0:05:39  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.0818
+2023/06/07 12:46:00 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:00 - mmengine - INFO - Saving checkpoint at 47 epochs
+2023/06/07 12:46:02 - mmengine - INFO - Epoch(val) [47][30/30]    accuracy/top1: 91.3369  data_time: 0.0137  time: 0.0319
+2023/06/07 12:46:08 - mmengine - INFO - Epoch(train)  [48][100/108]  lr: 1.0000e-03  eta: 0:05:33  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.1171
+2023/06/07 12:46:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:09 - mmengine - INFO - Saving checkpoint at 48 epochs
+2023/06/07 12:46:11 - mmengine - INFO - Epoch(val) [48][30/30]    accuracy/top1: 90.8021  data_time: 0.0141  time: 0.0323
+2023/06/07 12:46:17 - mmengine - INFO - Epoch(train)  [49][100/108]  lr: 1.0000e-03  eta: 0:05:27  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.1231
+2023/06/07 12:46:17 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:17 - mmengine - INFO - Saving checkpoint at 49 epochs
+2023/06/07 12:46:19 - mmengine - INFO - Epoch(val) [49][30/30]    accuracy/top1: 91.0160  data_time: 0.0142  time: 0.0327
+2023/06/07 12:46:26 - mmengine - INFO - Epoch(train)  [50][100/108]  lr: 1.0000e-03  eta: 0:05:21  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0881
+2023/06/07 12:46:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:26 - mmengine - INFO - Saving checkpoint at 50 epochs
+2023/06/07 12:46:28 - mmengine - INFO - Epoch(val) [50][30/30]    accuracy/top1: 91.0160  data_time: 0.0157  time: 0.0333
+2023/06/07 12:46:34 - mmengine - INFO - Epoch(train)  [51][100/108]  lr: 1.0000e-03  eta: 0:05:14  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0692
+2023/06/07 12:46:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:35 - mmengine - INFO - Saving checkpoint at 51 epochs
+2023/06/07 12:46:37 - mmengine - INFO - Epoch(val) [51][30/30]    accuracy/top1: 91.2299  data_time: 0.0135  time: 0.0316
+2023/06/07 12:46:43 - mmengine - INFO - Epoch(train)  [52][100/108]  lr: 1.0000e-03  eta: 0:05:08  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0429
+2023/06/07 12:46:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:43 - mmengine - INFO - Saving checkpoint at 52 epochs
+2023/06/07 12:46:45 - mmengine - INFO - Epoch(val) [52][30/30]    accuracy/top1: 90.5882  data_time: 0.0137  time: 0.0320
+2023/06/07 12:46:51 - mmengine - INFO - Epoch(train)  [53][100/108]  lr: 1.0000e-03  eta: 0:05:02  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.0582
+2023/06/07 12:46:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:46:52 - mmengine - INFO - Saving checkpoint at 53 epochs
+2023/06/07 12:46:54 - mmengine - INFO - Epoch(val) [53][30/30]    accuracy/top1: 91.1230  data_time: 0.0100  time: 0.0312
+2023/06/07 12:47:00 - mmengine - INFO - Epoch(train)  [54][100/108]  lr: 1.0000e-03  eta: 0:04:56  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0413
+2023/06/07 12:47:00 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:00 - mmengine - INFO - Saving checkpoint at 54 epochs
+2023/06/07 12:47:02 - mmengine - INFO - Epoch(val) [54][30/30]    accuracy/top1: 90.4813  data_time: 0.0131  time: 0.0312
+2023/06/07 12:47:08 - mmengine - INFO - Epoch(train)  [55][100/108]  lr: 1.0000e-03  eta: 0:04:49  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.1019
+2023/06/07 12:47:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:09 - mmengine - INFO - Saving checkpoint at 55 epochs
+2023/06/07 12:47:11 - mmengine - INFO - Epoch(val) [55][30/30]    accuracy/top1: 91.0160  data_time: 0.0146  time: 0.0321
+2023/06/07 12:47:15 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:17 - mmengine - INFO - Epoch(train)  [56][100/108]  lr: 1.0000e-03  eta: 0:04:43  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0952
+2023/06/07 12:47:17 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:17 - mmengine - INFO - Saving checkpoint at 56 epochs
+2023/06/07 12:47:19 - mmengine - INFO - Epoch(val) [56][30/30]    accuracy/top1: 91.1230  data_time: 0.0144  time: 0.0321
+2023/06/07 12:47:25 - mmengine - INFO - Epoch(train)  [57][100/108]  lr: 1.0000e-03  eta: 0:04:37  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.0585
+2023/06/07 12:47:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:26 - mmengine - INFO - Saving checkpoint at 57 epochs
+2023/06/07 12:47:28 - mmengine - INFO - Epoch(val) [57][30/30]    accuracy/top1: 91.3369  data_time: 0.0130  time: 0.0312
+2023/06/07 12:47:34 - mmengine - INFO - Epoch(train)  [58][100/108]  lr: 1.0000e-03  eta: 0:04:30  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.1681
+2023/06/07 12:47:34 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:34 - mmengine - INFO - Saving checkpoint at 58 epochs
+2023/06/07 12:47:36 - mmengine - INFO - Epoch(val) [58][30/30]    accuracy/top1: 91.0160  data_time: 0.0137  time: 0.0317
+2023/06/07 12:47:43 - mmengine - INFO - Epoch(train)  [59][100/108]  lr: 1.0000e-03  eta: 0:04:24  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0895
+2023/06/07 12:47:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:43 - mmengine - INFO - Saving checkpoint at 59 epochs
+2023/06/07 12:47:45 - mmengine - INFO - Epoch(val) [59][30/30]    accuracy/top1: 91.1230  data_time: 0.0147  time: 0.0325
+2023/06/07 12:47:51 - mmengine - INFO - Epoch(train)  [60][100/108]  lr: 1.0000e-03  eta: 0:04:17  time: 0.0595  data_time: 0.0006  memory: 921  loss: 0.0494
+2023/06/07 12:47:51 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:47:51 - mmengine - INFO - Saving checkpoint at 60 epochs
+2023/06/07 12:47:53 - mmengine - INFO - Epoch(val) [60][30/30]    accuracy/top1: 91.4438  data_time: 0.0131  time: 0.0315
+2023/06/07 12:48:00 - mmengine - INFO - Epoch(train)  [61][100/108]  lr: 1.0000e-04  eta: 0:04:11  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0758
+2023/06/07 12:48:00 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:00 - mmengine - INFO - Saving checkpoint at 61 epochs
+2023/06/07 12:48:02 - mmengine - INFO - Epoch(val) [61][30/30]    accuracy/top1: 91.4438  data_time: 0.0141  time: 0.0322
+2023/06/07 12:48:08 - mmengine - INFO - Epoch(train)  [62][100/108]  lr: 1.0000e-04  eta: 0:04:05  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.1065
+2023/06/07 12:48:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:09 - mmengine - INFO - Saving checkpoint at 62 epochs
+2023/06/07 12:48:11 - mmengine - INFO - Epoch(val) [62][30/30]    accuracy/top1: 91.2299  data_time: 0.0167  time: 0.0348
+2023/06/07 12:48:17 - mmengine - INFO - Epoch(train)  [63][100/108]  lr: 1.0000e-04  eta: 0:03:58  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0823
+2023/06/07 12:48:17 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:17 - mmengine - INFO - Saving checkpoint at 63 epochs
+2023/06/07 12:48:19 - mmengine - INFO - Epoch(val) [63][30/30]    accuracy/top1: 91.0160  data_time: 0.0159  time: 0.0341
+2023/06/07 12:48:25 - mmengine - INFO - Epoch(train)  [64][100/108]  lr: 1.0000e-04  eta: 0:03:52  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0774
+2023/06/07 12:48:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:26 - mmengine - INFO - Saving checkpoint at 64 epochs
+2023/06/07 12:48:28 - mmengine - INFO - Epoch(val) [64][30/30]    accuracy/top1: 91.4438  data_time: 0.0152  time: 0.0332
+2023/06/07 12:48:33 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:34 - mmengine - INFO - Epoch(train)  [65][100/108]  lr: 1.0000e-04  eta: 0:03:46  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0458
+2023/06/07 12:48:34 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:34 - mmengine - INFO - Saving checkpoint at 65 epochs
+2023/06/07 12:48:37 - mmengine - INFO - Epoch(val) [65][30/30]    accuracy/top1: 91.0160  data_time: 0.0146  time: 0.0324
+2023/06/07 12:48:43 - mmengine - INFO - Epoch(train)  [66][100/108]  lr: 1.0000e-04  eta: 0:03:39  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0636
+2023/06/07 12:48:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:43 - mmengine - INFO - Saving checkpoint at 66 epochs
+2023/06/07 12:48:45 - mmengine - INFO - Epoch(val) [66][30/30]    accuracy/top1: 91.4438  data_time: 0.0139  time: 0.0321
+2023/06/07 12:48:51 - mmengine - INFO - Epoch(train)  [67][100/108]  lr: 1.0000e-04  eta: 0:03:33  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.1126
+2023/06/07 12:48:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:48:52 - mmengine - INFO - Saving checkpoint at 67 epochs
+2023/06/07 12:48:54 - mmengine - INFO - Epoch(val) [67][30/30]    accuracy/top1: 91.3369  data_time: 0.0141  time: 0.0322
+2023/06/07 12:49:00 - mmengine - INFO - Epoch(train)  [68][100/108]  lr: 1.0000e-04  eta: 0:03:26  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0986
+2023/06/07 12:49:00 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:49:00 - mmengine - INFO - Saving checkpoint at 68 epochs
+2023/06/07 12:49:02 - mmengine - INFO - Epoch(val) [68][30/30]    accuracy/top1: 91.2299  data_time: 0.0170  time: 0.0349
+2023/06/07 12:49:09 - mmengine - INFO - Epoch(train)  [69][100/108]  lr: 1.0000e-04  eta: 0:03:20  time: 0.0600  data_time: 0.0008  memory: 921  loss: 0.0420
+2023/06/07 12:49:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:49:09 - mmengine - INFO - Saving checkpoint at 69 epochs
+2023/06/07 12:49:11 - mmengine - INFO - Epoch(val) [69][30/30]    accuracy/top1: 91.4438  data_time: 0.0155  time: 0.0340
+2023/06/07 12:49:17 - mmengine - INFO - Epoch(train)  [70][100/108]  lr: 1.0000e-04  eta: 0:03:14  time: 0.0599  data_time: 0.0006  memory: 921  loss: 0.0825
+2023/06/07 12:49:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:49:18 - mmengine - INFO - Saving checkpoint at 70 epochs
+2023/06/07 12:49:20 - mmengine - INFO - Epoch(val) [70][30/30]    accuracy/top1: 91.1230  data_time: 0.0131  time: 0.0316
+2023/06/07 12:49:26 - mmengine - INFO - Epoch(train)  [71][100/108]  lr: 1.0000e-04  eta: 0:03:07  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.0739
+2023/06/07 12:49:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:49:26 - mmengine - INFO - Saving checkpoint at 71 epochs
+2023/06/07 12:49:28 - mmengine - INFO - Epoch(val) [71][30/30]    accuracy/top1: 91.8717  data_time: 0.0136  time: 0.0319
+2023/06/07 12:49:34 - mmengine - INFO - Epoch(train)  [72][100/108]  lr: 1.0000e-04  eta: 0:03:01  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0660
+2023/06/07 12:49:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:49:35 - mmengine - INFO - Saving checkpoint at 72 epochs
+2023/06/07 12:49:37 - mmengine - INFO - Epoch(val) [72][30/30]    accuracy/top1: 91.2299  data_time: 0.0142  time: 0.0317
+2023/06/07 12:49:43 - mmengine - INFO - Epoch(train)  [73][100/108]  lr: 1.0000e-04  eta: 0:02:54  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0782
+2023/06/07 12:49:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:49:43 - mmengine - INFO - Saving checkpoint at 73 epochs
+2023/06/07 12:49:45 - mmengine - INFO - Epoch(val) [73][30/30]    accuracy/top1: 92.0856  data_time: 0.0132  time: 0.0319
+2023/06/07 12:49:52 - mmengine - INFO - Epoch(train)  [74][100/108]  lr: 1.0000e-04  eta: 0:02:48  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.1068
+2023/06/07 12:49:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:49:52 - mmengine - INFO - Saving checkpoint at 74 epochs
+2023/06/07 12:49:54 - mmengine - INFO - Epoch(val) [74][30/30]    accuracy/top1: 91.9786  data_time: 0.0127  time: 0.0308
+2023/06/07 12:49:55 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:00 - mmengine - INFO - Epoch(train)  [75][100/108]  lr: 1.0000e-04  eta: 0:02:41  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0580
+2023/06/07 12:50:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:01 - mmengine - INFO - Saving checkpoint at 75 epochs
+2023/06/07 12:50:03 - mmengine - INFO - Epoch(val) [75][30/30]    accuracy/top1: 91.2299  data_time: 0.0128  time: 0.0313
+2023/06/07 12:50:09 - mmengine - INFO - Epoch(train)  [76][100/108]  lr: 1.0000e-04  eta: 0:02:35  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.1055
+2023/06/07 12:50:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:09 - mmengine - INFO - Saving checkpoint at 76 epochs
+2023/06/07 12:50:11 - mmengine - INFO - Epoch(val) [76][30/30]    accuracy/top1: 91.2299  data_time: 0.0142  time: 0.0325
+2023/06/07 12:50:17 - mmengine - INFO - Epoch(train)  [77][100/108]  lr: 1.0000e-04  eta: 0:02:29  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0742
+2023/06/07 12:50:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:18 - mmengine - INFO - Saving checkpoint at 77 epochs
+2023/06/07 12:50:20 - mmengine - INFO - Epoch(val) [77][30/30]    accuracy/top1: 91.5508  data_time: 0.0134  time: 0.0320
+2023/06/07 12:50:26 - mmengine - INFO - Epoch(train)  [78][100/108]  lr: 1.0000e-04  eta: 0:02:22  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0610
+2023/06/07 12:50:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:26 - mmengine - INFO - Saving checkpoint at 78 epochs
+2023/06/07 12:50:28 - mmengine - INFO - Epoch(val) [78][30/30]    accuracy/top1: 91.3369  data_time: 0.0136  time: 0.0324
+2023/06/07 12:50:34 - mmengine - INFO - Epoch(train)  [79][100/108]  lr: 1.0000e-04  eta: 0:02:16  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0505
+2023/06/07 12:50:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:35 - mmengine - INFO - Saving checkpoint at 79 epochs
+2023/06/07 12:50:37 - mmengine - INFO - Epoch(val) [79][30/30]    accuracy/top1: 91.2299  data_time: 0.0140  time: 0.0324
+2023/06/07 12:50:43 - mmengine - INFO - Epoch(train)  [80][100/108]  lr: 1.0000e-04  eta: 0:02:09  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0837
+2023/06/07 12:50:43 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:43 - mmengine - INFO - Saving checkpoint at 80 epochs
+2023/06/07 12:50:46 - mmengine - INFO - Epoch(val) [80][30/30]    accuracy/top1: 91.4438  data_time: 0.0152  time: 0.0336
+2023/06/07 12:50:52 - mmengine - INFO - Epoch(train)  [81][100/108]  lr: 1.0000e-04  eta: 0:02:03  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0496
+2023/06/07 12:50:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:50:52 - mmengine - INFO - Saving checkpoint at 81 epochs
+2023/06/07 12:50:54 - mmengine - INFO - Epoch(val) [81][30/30]    accuracy/top1: 91.5508  data_time: 0.0137  time: 0.0315
+2023/06/07 12:51:00 - mmengine - INFO - Epoch(train)  [82][100/108]  lr: 1.0000e-04  eta: 0:01:56  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0880
+2023/06/07 12:51:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:01 - mmengine - INFO - Saving checkpoint at 82 epochs
+2023/06/07 12:51:03 - mmengine - INFO - Epoch(val) [82][30/30]    accuracy/top1: 91.2299  data_time: 0.0166  time: 0.0349
+2023/06/07 12:51:09 - mmengine - INFO - Epoch(train)  [83][100/108]  lr: 1.0000e-04  eta: 0:01:50  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0502
+2023/06/07 12:51:09 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:09 - mmengine - INFO - Saving checkpoint at 83 epochs
+2023/06/07 12:51:11 - mmengine - INFO - Epoch(val) [83][30/30]    accuracy/top1: 91.3369  data_time: 0.0138  time: 0.0317
+2023/06/07 12:51:14 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:17 - mmengine - INFO - Epoch(train)  [84][100/108]  lr: 1.0000e-04  eta: 0:01:43  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0491
+2023/06/07 12:51:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:18 - mmengine - INFO - Saving checkpoint at 84 epochs
+2023/06/07 12:51:20 - mmengine - INFO - Epoch(val) [84][30/30]    accuracy/top1: 91.4438  data_time: 0.0136  time: 0.0317
+2023/06/07 12:51:26 - mmengine - INFO - Epoch(train)  [85][100/108]  lr: 1.0000e-04  eta: 0:01:37  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0398
+2023/06/07 12:51:26 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:26 - mmengine - INFO - Saving checkpoint at 85 epochs
+2023/06/07 12:51:28 - mmengine - INFO - Epoch(val) [85][30/30]    accuracy/top1: 90.9091  data_time: 0.0134  time: 0.0317
+2023/06/07 12:51:35 - mmengine - INFO - Epoch(train)  [86][100/108]  lr: 1.0000e-04  eta: 0:01:31  time: 0.0597  data_time: 0.0005  memory: 921  loss: 0.1066
+2023/06/07 12:51:35 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:35 - mmengine - INFO - Saving checkpoint at 86 epochs
+2023/06/07 12:51:37 - mmengine - INFO - Epoch(val) [86][30/30]    accuracy/top1: 91.4438  data_time: 0.0149  time: 0.0328
+2023/06/07 12:51:43 - mmengine - INFO - Epoch(train)  [87][100/108]  lr: 1.0000e-04  eta: 0:01:24  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0547
+2023/06/07 12:51:44 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:44 - mmengine - INFO - Saving checkpoint at 87 epochs
+2023/06/07 12:51:46 - mmengine - INFO - Epoch(val) [87][30/30]    accuracy/top1: 91.7647  data_time: 0.0135  time: 0.0316
+2023/06/07 12:51:52 - mmengine - INFO - Epoch(train)  [88][100/108]  lr: 1.0000e-04  eta: 0:01:18  time: 0.0598  data_time: 0.0006  memory: 921  loss: 0.1040
+2023/06/07 12:51:52 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:51:52 - mmengine - INFO - Saving checkpoint at 88 epochs
+2023/06/07 12:51:54 - mmengine - INFO - Epoch(val) [88][30/30]    accuracy/top1: 91.3369  data_time: 0.0148  time: 0.0322
+2023/06/07 12:52:00 - mmengine - INFO - Epoch(train)  [89][100/108]  lr: 1.0000e-04  eta: 0:01:11  time: 0.0599  data_time: 0.0007  memory: 921  loss: 0.0861
+2023/06/07 12:52:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:01 - mmengine - INFO - Saving checkpoint at 89 epochs
+2023/06/07 12:52:03 - mmengine - INFO - Epoch(val) [89][30/30]    accuracy/top1: 91.0160  data_time: 0.0121  time: 0.0307
+2023/06/07 12:52:09 - mmengine - INFO - Epoch(train)  [90][100/108]  lr: 1.0000e-04  eta: 0:01:05  time: 0.0600  data_time: 0.0006  memory: 921  loss: 0.0492
+2023/06/07 12:52:10 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:10 - mmengine - INFO - Saving checkpoint at 90 epochs
+2023/06/07 12:52:12 - mmengine - INFO - Epoch(val) [90][30/30]    accuracy/top1: 91.3369  data_time: 0.0150  time: 0.0329
+2023/06/07 12:52:18 - mmengine - INFO - Epoch(train)  [91][100/108]  lr: 1.0000e-05  eta: 0:00:58  time: 0.0598  data_time: 0.0007  memory: 921  loss: 0.0736
+2023/06/07 12:52:18 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:18 - mmengine - INFO - Saving checkpoint at 91 epochs
+2023/06/07 12:52:20 - mmengine - INFO - Epoch(val) [91][30/30]    accuracy/top1: 91.1230  data_time: 0.0145  time: 0.0325
+2023/06/07 12:52:26 - mmengine - INFO - Epoch(train)  [92][100/108]  lr: 1.0000e-05  eta: 0:00:52  time: 0.0598  data_time: 0.0006  memory: 921  loss: 0.1073
+2023/06/07 12:52:27 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:27 - mmengine - INFO - Saving checkpoint at 92 epochs
+2023/06/07 12:52:29 - mmengine - INFO - Epoch(val) [92][30/30]    accuracy/top1: 91.4438  data_time: 0.0089  time: 0.0327
+2023/06/07 12:52:33 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:35 - mmengine - INFO - Epoch(train)  [93][100/108]  lr: 1.0000e-05  eta: 0:00:45  time: 0.0596  data_time: 0.0005  memory: 921  loss: 0.0890
+2023/06/07 12:52:36 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:36 - mmengine - INFO - Saving checkpoint at 93 epochs
+2023/06/07 12:52:38 - mmengine - INFO - Epoch(val) [93][30/30]    accuracy/top1: 91.4438  data_time: 0.0142  time: 0.0320
+2023/06/07 12:52:44 - mmengine - INFO - Epoch(train)  [94][100/108]  lr: 1.0000e-05  eta: 0:00:39  time: 0.0595  data_time: 0.0005  memory: 921  loss: 0.0715
+2023/06/07 12:52:44 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:44 - mmengine - INFO - Saving checkpoint at 94 epochs
+2023/06/07 12:52:46 - mmengine - INFO - Epoch(val) [94][30/30]    accuracy/top1: 91.3369  data_time: 0.0142  time: 0.0322
+2023/06/07 12:52:52 - mmengine - INFO - Epoch(train)  [95][100/108]  lr: 1.0000e-05  eta: 0:00:32  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0797
+2023/06/07 12:52:53 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:52:53 - mmengine - INFO - Saving checkpoint at 95 epochs
+2023/06/07 12:52:55 - mmengine - INFO - Epoch(val) [95][30/30]    accuracy/top1: 91.1230  data_time: 0.0132  time: 0.0318
+2023/06/07 12:53:01 - mmengine - INFO - Epoch(train)  [96][100/108]  lr: 1.0000e-05  eta: 0:00:26  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0408
+2023/06/07 12:53:01 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:53:01 - mmengine - INFO - Saving checkpoint at 96 epochs
+2023/06/07 12:53:03 - mmengine - INFO - Epoch(val) [96][30/30]    accuracy/top1: 91.0160  data_time: 0.0133  time: 0.0320
+2023/06/07 12:53:09 - mmengine - INFO - Epoch(train)  [97][100/108]  lr: 1.0000e-05  eta: 0:00:19  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0804
+2023/06/07 12:53:10 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:53:10 - mmengine - INFO - Saving checkpoint at 97 epochs
+2023/06/07 12:53:12 - mmengine - INFO - Epoch(val) [97][30/30]    accuracy/top1: 91.1230  data_time: 0.0138  time: 0.0320
+2023/06/07 12:53:18 - mmengine - INFO - Epoch(train)  [98][100/108]  lr: 1.0000e-05  eta: 0:00:13  time: 0.0597  data_time: 0.0006  memory: 921  loss: 0.0628
+2023/06/07 12:53:19 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:53:19 - mmengine - INFO - Saving checkpoint at 98 epochs
+2023/06/07 12:53:20 - mmengine - INFO - Epoch(val) [98][30/30]    accuracy/top1: 91.2299  data_time: 0.0124  time: 0.0306
+2023/06/07 12:53:26 - mmengine - INFO - Epoch(train)  [99][100/108]  lr: 1.0000e-05  eta: 0:00:06  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0484
+2023/06/07 12:53:27 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:53:27 - mmengine - INFO - Saving checkpoint at 99 epochs
+2023/06/07 12:53:29 - mmengine - INFO - Epoch(val) [99][30/30]    accuracy/top1: 91.4438  data_time: 0.0150  time: 0.0337
+2023/06/07 12:53:35 - mmengine - INFO - Epoch(train) [100][100/108]  lr: 1.0000e-05  eta: 0:00:00  time: 0.0596  data_time: 0.0006  memory: 921  loss: 0.0720
+2023/06/07 12:53:36 - mmengine - INFO - Exp name: resnet18_finetune_20230607_123917
+2023/06/07 12:53:36 - mmengine - INFO - Saving checkpoint at 100 epochs
+2023/06/07 12:53:38 - mmengine - INFO - Epoch(val) [100][30/30]    accuracy/top1: 91.1230  data_time: 0.0161  time: 0.0349
